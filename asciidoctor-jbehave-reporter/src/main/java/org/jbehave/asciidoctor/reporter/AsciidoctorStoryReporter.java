@@ -1,7 +1,6 @@
 package org.jbehave.asciidoctor.reporter;
 
 import java.io.PrintStream;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -67,7 +66,7 @@ public class AsciidoctorStoryReporter implements StoryReporter {
 					storyReporterBuilder.keywords(), SECTION_KEY);
 		}
 	};
-	
+
 	public static final Format ASCIIDOC(final int initialSectionLevel) {
 		return new Format("ADOC") {
 
@@ -77,7 +76,8 @@ public class AsciidoctorStoryReporter implements StoryReporter {
 					StoryReporterBuilder storyReporterBuilder) {
 				factory.useConfiguration(storyReporterBuilder
 						.fileConfiguration("adoc"));
-				return new AsciidoctorStoryReporter(factory.createPrintStream(),
+				return new AsciidoctorStoryReporter(
+						factory.createPrintStream(),
 						storyReporterBuilder.keywords(), initialSectionLevel);
 			}
 		};
@@ -85,7 +85,7 @@ public class AsciidoctorStoryReporter implements StoryReporter {
 
 	public AsciidoctorStoryReporter(PrintStream output, Keywords keywords,
 			int initialSectionLevel) {
-		
+
 		this.printer = output;
 		this.keywords = keywords;
 		this.initialLevel = initialSectionLevel;
@@ -102,7 +102,7 @@ public class AsciidoctorStoryReporter implements StoryReporter {
 
 	@Override
 	public void afterStory(boolean givenStory) {
-		
+
 		this.initialLevel--;
 
 		if (!givenStory) {
@@ -110,84 +110,89 @@ public class AsciidoctorStoryReporter implements StoryReporter {
 			this.currentStoryContent = new StringBuilder();
 			this.currentStoryResult = StoryResult.SUCCESS;
 		} else {
-			this.currentStoryContent.append("'''").append(NEW_LINE).append(NEW_LINE);
+			this.currentStoryContent.append("'''").append(NEW_LINE)
+					.append(NEW_LINE);
 		}
 
 	}
 
 	private String renderStoryResult() {
-		return String.format(this.currentStoryContent.toString(), getStoryResult());
+		return String.format(this.currentStoryContent.toString(),
+				getStoryResult());
 	}
 
 	@Override
 	public void beforeExamples(List<String> steps, ExamplesTable table) {
-		
+
 		StringBuilder output = new StringBuilder();
-		
-		output.append(".Examples").append(NEW_LINE).append("****").append(NEW_LINE);
+
+		output.append(".Examples").append(NEW_LINE).append("****")
+				.append(NEW_LINE);
 		output.append(renderSteps(steps));
 		output.append(renderExamplesTable(table));
 		output.append("****").append(NEW_LINE).append(NEW_LINE);
-		
+
 		this.currentStoryContent.append(output.toString());
-		
+
 	}
 
 	private String renderExamplesTable(ExamplesTable examplesTable) {
 
-        List<String> headers = examplesTable.getHeaders();
-        String tableInformation = "[options=\"header\"]" + NEW_LINE;
-        tableInformation += ".Examples" + NEW_LINE;
-        tableInformation += "|===" + NEW_LINE;
+		List<String> headers = examplesTable.getHeaders();
+		StringBuilder tableInformation = new StringBuilder(
+				"[options=\"header\"]" + NEW_LINE);
+		tableInformation.append(".Examples").append(NEW_LINE);
+		tableInformation.append("|===").append(NEW_LINE);
 
-        for (String header : headers) {
-            tableInformation += "|" + header;
-        }
-        tableInformation += NEW_LINE;
+		for (String header : headers) {
+			tableInformation.append("|").append(header);
+		}
+		tableInformation.append(NEW_LINE);
 
-        tableInformation += renderContentTable(examplesTable, headers);
+		tableInformation.append(renderContentTable(examplesTable, headers));
 
-        tableInformation += "|===" + NEW_LINE + NEW_LINE;
+		tableInformation.append("|===").append(NEW_LINE).append(NEW_LINE);
 
-        return tableInformation;
-    }
+		return tableInformation.toString();
+	}
 
-    private String renderContentTable(ExamplesTable examplesTable,
-            List<String> headers) {
+	private String renderContentTable(ExamplesTable examplesTable,
+			List<String> headers) {
 
-        String tableInformation = "";
+		StringBuilder tableInformation = new StringBuilder();
 
-        for (int numberOfRow = 0; numberOfRow < examplesTable.getRowCount(); numberOfRow++) {
+		for (int numberOfRow = 0; numberOfRow < examplesTable.getRowCount(); numberOfRow++) {
 
-            Map<String, String> row = examplesTable.getRow(numberOfRow);
+			Map<String, String> row = examplesTable.getRow(numberOfRow);
 
-            for (String header : headers) {
-                tableInformation += "|" + row.get(header) + NEW_LINE;
-            }
+			for (String header : headers) {
+				tableInformation.append("|").append(row.get(header))
+						.append(NEW_LINE);
+			}
 
-            tableInformation += NEW_LINE;
+			tableInformation.append(NEW_LINE);
 
-        }
-        return tableInformation;
-    }
+		}
+		return tableInformation.toString();
+	}
 
-    private String renderSteps(List<String> steps) {
-    	
-        StringBuilder stepsInformation = new StringBuilder(".Steps" + NEW_LINE);
-        stepsInformation.append("----").append(NEW_LINE);
-        for (String step : steps) {
-            stepsInformation.append(step).append(NEW_LINE);
-        }
+	private String renderSteps(List<String> steps) {
 
-        stepsInformation.append("----").append(NEW_LINE);
-        stepsInformation.append(NEW_LINE);
+		StringBuilder stepsInformation = new StringBuilder(".Steps" + NEW_LINE);
+		stepsInformation.append("----").append(NEW_LINE);
+		for (String step : steps) {
+			stepsInformation.append(step).append(NEW_LINE);
+		}
 
-        return stepsInformation.toString();
-    }
-	
+		stepsInformation.append("----").append(NEW_LINE);
+		stepsInformation.append(NEW_LINE);
+
+		return stepsInformation.toString();
+	}
+
 	@Override
 	public void beforeScenario(String scenarioTitle) {
-		
+
 		this.initialLevel++;
 		this.currentStoryContent.append(renderTitle(scenarioTitle,
 				this.initialLevel));
@@ -195,6 +200,7 @@ public class AsciidoctorStoryReporter implements StoryReporter {
 
 	@Override
 	public void beforeStep(String step) {
+		
 	}
 
 	@Override
@@ -211,8 +217,7 @@ public class AsciidoctorStoryReporter implements StoryReporter {
 				.append(NEW_LINE);
 
 		if (!givenStory) {
-			outputContent.append("%s").append(NEW_LINE)
-					.append(NEW_LINE);
+			outputContent.append("%s").append(NEW_LINE).append(NEW_LINE);
 		}
 
 		Description description = story.getDescription();
@@ -243,10 +248,10 @@ public class AsciidoctorStoryReporter implements StoryReporter {
 
 	@Override
 	public void failed(String step, Throwable cause) {
-		
+
 		this.currentStoryResult = StoryResult.FAIL;
 
-		StringBuilder failedChunk = new StringBuilder(step + " ");
+		StringBuilder failedChunk = new StringBuilder(formatStep(step) + " ");
 		failedChunk.append(getIcon(FAIL_STEP, "red"));
 		failedChunk.append(NEW_LINE).append(NEW_LINE);
 		failedChunk.append("[IMPORTANT]");
@@ -255,43 +260,46 @@ public class AsciidoctorStoryReporter implements StoryReporter {
 		failedChunk.append(cause.getCause().getMessage() + NEW_LINE);
 		failedChunk.append("====");
 		failedChunk.append(NEW_LINE + NEW_LINE);
-		
+
 		this.currentStoryContent.append(failedChunk.toString());
 
 	}
 
 	@Override
 	public void failedOutcomes(String step, OutcomesTable table) {
-		
-		this.currentStoryResult = StoryResult.FAIL;
-		
-		StringBuilder output = new StringBuilder();
-        output.append(step).append(" ").append(getIcon(FAIL_STEP, "red")).append(NEW_LINE);
-		
-        List<String> outcomeFields = table.getOutcomeFields();
 
-        output.append("[options=\"header\"]").append(NEW_LINE);
-        output.append("|===").append(NEW_LINE);
-        
-        for (String outcomeField : outcomeFields) {
+		this.currentStoryResult = StoryResult.FAIL;
+
+		StringBuilder output = new StringBuilder();
+		output.append(formatStep(step)).append(" ").append(getIcon(FAIL_STEP, "red"))
+				.append(NEW_LINE);
+
+		List<String> outcomeFields = table.getOutcomeFields();
+
+		output.append("[options=\"header\"]").append(NEW_LINE);
+		output.append("|===").append(NEW_LINE);
+
+		for (String outcomeField : outcomeFields) {
 			output.append("|").append(outcomeField).append(NEW_LINE);
 		}
-        
-        for (Outcome<?> outcome : table.getOutcomes()) {
-        	
-        	output.append("|").append(outcome.getDescription()).append(NEW_LINE);
-        	output.append("|").append(outcome.getValue()).append(NEW_LINE);
-        	output.append("|").append(outcome.getMatcher()).append(NEW_LINE);
-        	
-        	String icon = outcome.isVerified() ? getIcon(SUCCESS_STEP, "green") : getIcon(FAIL_STEP, "red");
-        	output.append("|").append(icon).append(NEW_LINE).append(NEW_LINE);
-        	
-        }
-        
-        output.append("|===").append(NEW_LINE).append(NEW_LINE);
-        
-        this.currentStoryContent.append(output.toString());
-		
+
+		for (Outcome<?> outcome : table.getOutcomes()) {
+
+			output.append("|").append(outcome.getDescription())
+					.append(NEW_LINE);
+			output.append("|").append(outcome.getValue()).append(NEW_LINE);
+			output.append("|").append(outcome.getMatcher()).append(NEW_LINE);
+
+			String icon = outcome.isVerified() ? getIcon(SUCCESS_STEP, "green")
+					: getIcon(FAIL_STEP, "red");
+			output.append("|").append(icon).append(NEW_LINE).append(NEW_LINE);
+
+		}
+
+		output.append("|===").append(NEW_LINE).append(NEW_LINE);
+
+		this.currentStoryContent.append(output.toString());
+
 	}
 
 	@Override
@@ -309,13 +317,50 @@ public class AsciidoctorStoryReporter implements StoryReporter {
 
 	@Override
 	public void ignorable(String step) {
-		
-		this.currentStoryContent.append(step + " "
-				+ getIcon(IGNORABLE_STEP, "black") + NEW_LINE + NEW_LINE);
+		this.currentStoryContent.append(formatStep(step)).append(" ")
+				.append(getIcon(IGNORABLE_STEP, "black")).append(NEW_LINE)
+				.append(NEW_LINE);
 	}
 
 	@Override
 	public void lifecyle(Lifecycle lifecycle) {
+
+		if (!lifecycle.isEmpty()) {
+
+			StringBuilder lifecycleOutput = new StringBuilder();
+			
+			List<String> beforeSteps = lifecycle.getBeforeSteps();
+
+			if(beforeSteps.size() > 0) {
+				
+				lifecycleOutput.append(".Before Steps"
+						+ NEW_LINE + "----" + NEW_LINE);
+				
+				for (String step : beforeSteps) {
+					lifecycleOutput.append(formatStep(step)).append(NEW_LINE);
+				}
+
+				lifecycleOutput.append("----").append(NEW_LINE).append(NEW_LINE);
+				
+			}
+				
+			List<String> afterSteps = lifecycle.getAfterSteps();
+			
+			if(afterSteps.size() > 0) {
+			
+				lifecycleOutput.append(".After Steps"
+						+ NEW_LINE + "----" + NEW_LINE);
+				
+				for (String step : afterSteps) {
+					lifecycleOutput.append(formatStep(step)).append(NEW_LINE);
+				}
+
+				lifecycleOutput.append("----").append(NEW_LINE).append(NEW_LINE);
+				
+			}
+			
+			this.currentStoryContent.append(lifecycleOutput.toString());
+		}
 	}
 
 	@Override
@@ -329,20 +374,24 @@ public class AsciidoctorStoryReporter implements StoryReporter {
 
 	@Override
 	public void notPerformed(String step) {
-		
-		this.currentStoryResult = StoryResult.SUCCESS_WITH_WARNING;
 
-		this.currentStoryContent.append(step + " "
-				+ getIcon(NOT_PERFORMED_STEP, "black") + NEW_LINE + NEW_LINE);
+		if (this.currentStoryResult != StoryResult.FAIL) {
+			this.currentStoryResult = StoryResult.SUCCESS_WITH_WARNING;
+		}
+
+		this.currentStoryContent.append(formatStep(step)).append(" ")
+				.append(getIcon(NOT_PERFORMED_STEP, "black")).append(NEW_LINE).append(NEW_LINE);
 	}
 
 	@Override
 	public void pending(String step) {
-		
-		this.currentStoryResult = StoryResult.SUCCESS_WITH_WARNING;
 
-		this.currentStoryContent.append(step + " "
-				+ getIcon(PENDING_STEP, "black") + NEW_LINE + NEW_LINE);
+		if (this.currentStoryResult != StoryResult.FAIL) {
+			this.currentStoryResult = StoryResult.SUCCESS_WITH_WARNING;
+		}
+
+		this.currentStoryContent.append(formatStep(step)).append(" ").append(
+				getIcon(PENDING_STEP, "black")).append(NEW_LINE).append(NEW_LINE);
 	}
 
 	@Override
@@ -351,15 +400,15 @@ public class AsciidoctorStoryReporter implements StoryReporter {
 
 	@Override
 	public void restarted(String step, Throwable cause) {
-		
+
 		this.currentStoryResult = StoryResult.FAIL;
 
-		String restartedChunk = step + " " + getIcon(RESTARTED_STEP, "yellow");
-		restartedChunk += NEW_LINE + NEW_LINE;
-		restartedChunk += "[WARNING]" + NEW_LINE + "===="
-				+ cause.getCause().getMessage() + NEW_LINE + "====";
-		restartedChunk += NEW_LINE + NEW_LINE;
-		this.currentStoryContent.append(restartedChunk);
+		StringBuilder restartedChunk = new StringBuilder(formatStep(step) + " " + getIcon(RESTARTED_STEP, "yellow"));
+		restartedChunk.append(NEW_LINE).append(NEW_LINE);
+		restartedChunk.append("[WARNING]").append(NEW_LINE).append("====")
+				.append(cause.getCause().getMessage()).append(NEW_LINE).append("====");
+		restartedChunk.append(NEW_LINE).append(NEW_LINE);
+		this.currentStoryContent.append(restartedChunk.toString());
 	}
 
 	@Override
@@ -373,77 +422,93 @@ public class AsciidoctorStoryReporter implements StoryReporter {
 
 	@Override
 	public void scenarioNotAllowed(Scenario scenario, String filter) {
-		
-		this.currentStoryResult = StoryResult.SUCCESS_WITH_WARNING;
-		
+
+		if (this.currentStoryResult != StoryResult.FAIL) {
+			this.currentStoryResult = StoryResult.SUCCESS_WITH_WARNING;
+		}
+
 		StringBuilder output = new StringBuilder();
-		
+
 		output.append("[WARNING]").append(NEW_LINE);
-		output.append(".Scenario Not Allowed [").append(filter).append("]").append(NEW_LINE);
-		
+		output.append(".Scenario Not Allowed [").append(filter).append("]")
+				.append(NEW_LINE);
+
 		output.append("====").append(NEW_LINE);
-		output.append(scenario.getTitle()).append(" ").append(getIcon(NOT_ALLOWED, "orange"));
+		output.append(scenario.getTitle()).append(" ")
+				.append(getIcon(NOT_ALLOWED, "orange"));
 		output.append("====").append(NEW_LINE);
-		
+
 		this.currentStoryContent.append(output.toString());
-		
+
 	}
 
 	@Override
 	public void storyCancelled(Story story, StoryDuration storyDuration) {
-		
-		this.currentStoryResult = StoryResult.SUCCESS_WITH_WARNING;
-		
+
+		if (this.currentStoryResult != StoryResult.FAIL) {
+			this.currentStoryResult = StoryResult.SUCCESS_WITH_WARNING;
+		}
+
 		StringBuilder output = new StringBuilder();
-		
+
 		output.append("[WARNING]").append(NEW_LINE);
-		output.append(".Scenario Cancelled with Timeout [").append(storyDuration.getTimeoutInSecs()).append(" sec.]").append(NEW_LINE);
-		
+		output.append(".Scenario Cancelled with Timeout [")
+				.append(storyDuration.getTimeoutInSecs()).append(" sec.]")
+				.append(NEW_LINE);
+
 		output.append("====").append(NEW_LINE);
-		output.append(story.getName()).append(" ").append(getIcon(CANCELLED, "orange"));
+		output.append(story.getName()).append(" ")
+				.append(getIcon(CANCELLED, "orange"));
 		output.append("====").append(NEW_LINE);
-		
+
 		this.currentStoryContent.append(output.toString());
 	}
 
 	@Override
 	public void storyNotAllowed(Story story, String filter) {
 
-		this.currentStoryResult = StoryResult.SUCCESS_WITH_WARNING;
-		
-		StringBuilder output = new StringBuilder();
-		
-		output.append("[WARNING]").append(NEW_LINE);
-		output.append(".Story Not Allowed [").append(filter).append("]").append(NEW_LINE);
-		
-		output.append("====").append(NEW_LINE);
-		output.append(story.getName()).append(" ").append(getIcon(NOT_ALLOWED, "orange"));
-		output.append("====").append(NEW_LINE);
-		
-		this.currentStoryContent.append(output.toString());
-	
-	}
+		if (this.currentStoryResult != StoryResult.FAIL) {
+			this.currentStoryResult = StoryResult.SUCCESS_WITH_WARNING;
+		}
 
+		StringBuilder output = new StringBuilder();
+
+		output.append("[WARNING]").append(NEW_LINE);
+		output.append(".Story Not Allowed [").append(filter).append("]")
+				.append(NEW_LINE);
+
+		output.append("====").append(NEW_LINE);
+		output.append(story.getName()).append(" ")
+				.append(getIcon(NOT_ALLOWED, "orange"));
+		output.append("====").append(NEW_LINE);
+
+		this.currentStoryContent.append(output.toString());
+
+	}
+	
 	@Override
 	public void successful(String step) {
-		this.currentStoryContent.append(step + " "
-				+ getIcon(SUCCESS_STEP, "green") + NEW_LINE + NEW_LINE);
+		this.currentStoryContent.append(formatStep(step)).append( " "
+				).append(getIcon(SUCCESS_STEP, "green")).append(NEW_LINE).append(NEW_LINE);
 	}
 
-	private String getIcon(String iconName, String size, String flip, String role) {
-		return "icon:" + iconName + "[size="+size+", flip=\"" + flip + "\" role=\"" + role + "\"]";
+	private String getIcon(String iconName, String size, String flip,
+			String role) {
+		return "icon:" + iconName + "[size=" + size + ", flip=\"" + flip
+				+ "\" role=\"" + role + "\"]";
 	}
-	
+
 	private String getIcon(String iconName, String size, String role) {
-		return "icon:" + iconName + "[size="+size+", role=\"" + role + "\"]";
+		return "icon:" + iconName + "[size=" + size + ", role=\"" + role
+				+ "\"]";
 	}
-	
+
 	private String getIcon(String iconName, String role) {
 		return "icon:" + iconName + "[role=\"" + role + "\"]";
 	}
 
 	private String getInitialSection(int initialLevel) {
-		
+
 		StringBuilder zeroLevel = new StringBuilder("=");
 
 		for (int i = 0; i < initialLevel; i++) {
@@ -460,33 +525,34 @@ public class AsciidoctorStoryReporter implements StoryReporter {
 
 	private String renderDescription(Description description) {
 
-		String descriptionInformation = ".Description" + NEW_LINE + "----"
-				+ NEW_LINE;
+		StringBuilder descriptionInformation = new StringBuilder(".Description"
+				+ NEW_LINE + "----" + NEW_LINE);
 
-		descriptionInformation += description.asString() + NEW_LINE;
+		descriptionInformation.append(description.asString()).append(NEW_LINE);
 
-		descriptionInformation += "----" + NEW_LINE + NEW_LINE;
+		descriptionInformation.append("----").append(NEW_LINE).append(NEW_LINE);
 
-		return descriptionInformation;
+		return descriptionInformation.toString();
 
 	}
 
 	private String renderMetaInformation(Meta meta) {
-		
-		String metaInformation = ".Meta" + NEW_LINE + "----" + NEW_LINE;
+
+		StringBuilder metaInformation = new StringBuilder(".Meta" + NEW_LINE
+				+ "----" + NEW_LINE);
 
 		Set<String> propertyNames = meta.getPropertyNames();
 
 		for (String propertyName : propertyNames) {
 			String propertyValue = meta.getProperty(propertyName);
 
-			metaInformation += "+" + propertyName + "+: " + propertyValue
-					+ NEW_LINE;
+			metaInformation.append("+").append(propertyName).append("+: ")
+					.append(propertyValue).append(NEW_LINE);
 		}
 
-		metaInformation += "----" + NEW_LINE + NEW_LINE;
+		metaInformation.append("----").append(NEW_LINE).append(NEW_LINE);
 
-		return metaInformation;
+		return metaInformation.toString();
 
 	}
 
@@ -500,63 +566,82 @@ public class AsciidoctorStoryReporter implements StoryReporter {
 
 	private String renderNarrative(Narrative narrative) {
 
-		String narrativeInformation = ".Narrative" + NEW_LINE + "****"
-				+ NEW_LINE;
+		StringBuilder narrativeInformation = new StringBuilder(".Narrative"
+				+ NEW_LINE + "****" + NEW_LINE);
 
 		String inOrderTo = narrative.inOrderTo();
 
 		if (inOrderTo != null) {
-			narrativeInformation += "*In Order To* " + inOrderTo + NEW_LINE
-					+ NEW_LINE;
+			narrativeInformation.append("*In Order To* ").append(inOrderTo)
+					.append(NEW_LINE).append(NEW_LINE);
 		}
 
 		String asA = narrative.asA();
 
 		if (asA != null) {
-			narrativeInformation += "*As a* " + asA + NEW_LINE + NEW_LINE;
+			narrativeInformation.append("*As a* ").append(asA).append(NEW_LINE)
+					.append(NEW_LINE);
 		}
 
 		String iWantTo = narrative.iWantTo();
 
 		if (iWantTo != null) {
-			narrativeInformation += "*I Want To* " + iWantTo + NEW_LINE
-					+ NEW_LINE;
+			narrativeInformation.append("*I Want To* ").append(iWantTo)
+					.append(NEW_LINE).append(NEW_LINE);
 		}
 
-		narrativeInformation += "****" + NEW_LINE + NEW_LINE;
+		narrativeInformation.append("****").append(NEW_LINE).append(NEW_LINE);
 
-		return narrativeInformation;
+		return narrativeInformation.toString();
 
 	}
 
 	private boolean areGivenStoriesProvided(GivenStories givenStories) {
 		return givenStories != null && givenStories.getStories().size() > 0;
 	}
-
+	
+	private String formatStep(String step) {
+		step = replaceParenthesis(step);
+		return boldFirstWord(step);
+	}
+	
+	private String replaceParenthesis(String content) {
+		return content.replace('｟', '(').replace('｠', ')');
+	}
+	
+	private String boldFirstWord(String content) {
+		int firstWhiteSpace = content.indexOf(" ");
+		return "*" + content.substring(0, firstWhiteSpace) + "*" + content.substring(firstWhiteSpace);
+	}
+	
 	private String renderGivenStories(GivenStories givenStories) {
 
-		String givenStoriesInformation = ".Given Stories" + NEW_LINE + "[NOTE]"
-				+ NEW_LINE + "====" + NEW_LINE;
+		StringBuilder givenStoriesInformation = new StringBuilder(
+				".Given Stories" + NEW_LINE + "[NOTE]" + NEW_LINE + "===="
+						+ NEW_LINE);
 
 		List<GivenStory> stories = givenStories.getStories();
 
 		for (GivenStory givenStory : stories) {
 			String path = givenStory.getPath();
-			givenStoriesInformation += "<<" + getStoryIdentifier(path) + ", "
-					+ path + ">>";
+			givenStoriesInformation.append("<<")
+					.append(getStoryIdentifier(path)).append(", ").append(path)
+					.append(">>");
 
 			if (givenStory.getAnchor() != null
 					&& !"".equals(givenStory.getAnchor().trim())) {
-				givenStoriesInformation += "#" + givenStory.getAnchor();
+				givenStoriesInformation.append("#").append(
+						givenStory.getAnchor());
 			}
 
-			givenStoriesInformation += NEW_LINE;
+			givenStoriesInformation.append(NEW_LINE);
 
 		}
 
-		givenStoriesInformation += "====" + NEW_LINE + NEW_LINE;
+		givenStoriesInformation.append("====").append(NEW_LINE)
+				.append(NEW_LINE);
 
-		return givenStoriesInformation;
+		return givenStoriesInformation.toString();
 
 	}
 
@@ -588,15 +673,22 @@ public class AsciidoctorStoryReporter implements StoryReporter {
 		return getInitialSection(currentScenarioNumber) + " Scenario: " + title
 				+ NEW_LINE + NEW_LINE;
 	}
-	
+
 	private String getStoryResult() {
 		switch (this.currentStoryResult) {
 		case SUCCESS:
-			return "[.lead]"+NEW_LINE+getIcon(SUCCESS_STORY, "2x", "green") + " This story is ready to be shipped.";
+			return "[.lead]" + NEW_LINE + getIcon(SUCCESS_STORY, "2x", "green")
+					+ " This story is ready to be shipped.";
 		case SUCCESS_WITH_WARNING:
-			return "[.lead]"+NEW_LINE+getIcon(SUCCESS_WITH_WARNING, "2x", "horizontal", "orange") + " This story can be shipped with caution.";
+			return "[.lead]"
+					+ NEW_LINE
+					+ getIcon(SUCCESS_WITH_WARNING, "2x", "horizontal",
+							"orange")
+					+ " This story can be shipped with caution.";
 		case FAIL:
-			return "[.lead]"+NEW_LINE+getIcon(FAILED_STORY, "2x", "horizontal", "red") + " This story contains errors and should not be shipped.";
+			return "[.lead]" + NEW_LINE
+					+ getIcon(FAILED_STORY, "2x", "horizontal", "red")
+					+ " This story contains errors and should not be shipped.";
 		default:
 			return "";
 		}
