@@ -25,6 +25,10 @@ import org.jbehave.core.reporters.StoryReporterBuilder;
 
 public class AsciidoctorStoryReporter implements StoryReporter {
 
+	private static final String FAILED_COLOR = "red";
+	private static final String SUCCESS_COLOR = "green";
+	private static final String WARNING_COLOR = "yellow";
+
 	private enum StoryResult {
 		SUCCESS, FAIL, SUCCESS_WITH_WARNING;
 	}
@@ -210,7 +214,7 @@ public class AsciidoctorStoryReporter implements StoryReporter {
 
 		StringBuilder outputContent = new StringBuilder();
 
-		outputContent.append("[[").append(story.getName()).append("]]")
+		outputContent.append("[[").append(changeInvalidCharacters(story.getName())).append("]]")
 				.append(NEW_LINE).append(getInitialSection(this.initialLevel))
 				.append(" ").append(story.getName())
 				.append(getSuffix(givenStory)).append(NEW_LINE)
@@ -234,6 +238,10 @@ public class AsciidoctorStoryReporter implements StoryReporter {
 
 	}
 
+	private String changeInvalidCharacters(String title) {
+		return title.replace('/', '_').replace('\\', '_');
+	}
+	
 	private String getSuffix(boolean givenStory) {
 		return givenStory ? " [GivenStory]" : "";
 	}
@@ -252,7 +260,7 @@ public class AsciidoctorStoryReporter implements StoryReporter {
 		this.currentStoryResult = StoryResult.FAIL;
 
 		StringBuilder failedChunk = new StringBuilder(formatStep(step) + " ");
-		failedChunk.append(getIcon(FAIL_STEP, "red"));
+		failedChunk.append(getIcon(FAIL_STEP, FAILED_COLOR));
 		failedChunk.append(NEW_LINE).append(NEW_LINE);
 		failedChunk.append("[IMPORTANT]");
 		failedChunk.append(NEW_LINE);
@@ -271,7 +279,7 @@ public class AsciidoctorStoryReporter implements StoryReporter {
 		this.currentStoryResult = StoryResult.FAIL;
 
 		StringBuilder output = new StringBuilder();
-		output.append(formatStep(step)).append(" ").append(getIcon(FAIL_STEP, "red"))
+		output.append(formatStep(step)).append(" ").append(getIcon(FAIL_STEP, FAILED_COLOR))
 				.append(NEW_LINE);
 
 		List<String> outcomeFields = table.getOutcomeFields();
@@ -280,9 +288,11 @@ public class AsciidoctorStoryReporter implements StoryReporter {
 		output.append("|===").append(NEW_LINE);
 
 		for (String outcomeField : outcomeFields) {
-			output.append("|").append(outcomeField).append(NEW_LINE);
+			output.append("|").append(outcomeField);
 		}
 
+		output.append(NEW_LINE);
+		
 		for (Outcome<?> outcome : table.getOutcomes()) {
 
 			output.append("|").append(outcome.getDescription())
@@ -290,8 +300,8 @@ public class AsciidoctorStoryReporter implements StoryReporter {
 			output.append("|").append(outcome.getValue()).append(NEW_LINE);
 			output.append("|").append(outcome.getMatcher()).append(NEW_LINE);
 
-			String icon = outcome.isVerified() ? getIcon(SUCCESS_STEP, "green")
-					: getIcon(FAIL_STEP, "red");
+			String icon = outcome.isVerified() ? getIcon(SUCCESS_STEP, SUCCESS_COLOR)
+					: getIcon(FAIL_STEP, FAILED_COLOR);
 			output.append("|").append(icon).append(NEW_LINE).append(NEW_LINE);
 
 		}
@@ -403,7 +413,7 @@ public class AsciidoctorStoryReporter implements StoryReporter {
 
 		this.currentStoryResult = StoryResult.FAIL;
 
-		StringBuilder restartedChunk = new StringBuilder(formatStep(step) + " " + getIcon(RESTARTED_STEP, "yellow"));
+		StringBuilder restartedChunk = new StringBuilder(formatStep(step) + " " + getIcon(RESTARTED_STEP, WARNING_COLOR));
 		restartedChunk.append(NEW_LINE).append(NEW_LINE);
 		restartedChunk.append("[WARNING]").append(NEW_LINE).append("====")
 				.append(cause.getCause().getMessage()).append(NEW_LINE).append("====");
@@ -435,8 +445,8 @@ public class AsciidoctorStoryReporter implements StoryReporter {
 
 		output.append("====").append(NEW_LINE);
 		output.append(scenario.getTitle()).append(" ")
-				.append(getIcon(NOT_ALLOWED, "orange"));
-		output.append("====").append(NEW_LINE);
+				.append(getIcon(NOT_ALLOWED, WARNING_COLOR));
+		output.append("====").append(NEW_LINE).append(NEW_LINE);
 
 		this.currentStoryContent.append(output.toString());
 
@@ -452,14 +462,15 @@ public class AsciidoctorStoryReporter implements StoryReporter {
 		StringBuilder output = new StringBuilder();
 
 		output.append("[WARNING]").append(NEW_LINE);
-		output.append(".Scenario Cancelled with Timeout [")
+		output.append(".Story Cancelled with Timeout [")
 				.append(storyDuration.getTimeoutInSecs()).append(" sec.]")
 				.append(NEW_LINE);
 
 		output.append("====").append(NEW_LINE);
 		output.append(story.getName()).append(" ")
-				.append(getIcon(CANCELLED, "orange"));
-		output.append("====").append(NEW_LINE);
+				.append(getIcon(CANCELLED, WARNING_COLOR));
+		output.append(NEW_LINE);
+		output.append("====").append(NEW_LINE).append(NEW_LINE);
 
 		this.currentStoryContent.append(output.toString());
 	}
@@ -479,8 +490,8 @@ public class AsciidoctorStoryReporter implements StoryReporter {
 
 		output.append("====").append(NEW_LINE);
 		output.append(story.getName()).append(" ")
-				.append(getIcon(NOT_ALLOWED, "orange"));
-		output.append("====").append(NEW_LINE);
+				.append(getIcon(NOT_ALLOWED, WARNING_COLOR));
+		output.append("====").append(NEW_LINE).append(NEW_LINE);
 
 		this.currentStoryContent.append(output.toString());
 
@@ -489,7 +500,7 @@ public class AsciidoctorStoryReporter implements StoryReporter {
 	@Override
 	public void successful(String step) {
 		this.currentStoryContent.append(formatStep(step)).append( " "
-				).append(getIcon(SUCCESS_STEP, "green")).append(NEW_LINE).append(NEW_LINE);
+				).append(getIcon(SUCCESS_STEP, SUCCESS_COLOR)).append(NEW_LINE).append(NEW_LINE);
 	}
 
 	private String getIcon(String iconName, String size, String flip,
@@ -677,17 +688,17 @@ public class AsciidoctorStoryReporter implements StoryReporter {
 	private String getStoryResult() {
 		switch (this.currentStoryResult) {
 		case SUCCESS:
-			return "[.lead]" + NEW_LINE + getIcon(SUCCESS_STORY, "2x", "green")
+			return "[.lead]" + NEW_LINE + getIcon(SUCCESS_STORY, "2x", SUCCESS_COLOR)
 					+ " This story is ready to be shipped.";
 		case SUCCESS_WITH_WARNING:
 			return "[.lead]"
 					+ NEW_LINE
 					+ getIcon(SUCCESS_WITH_WARNING, "2x", "horizontal",
-							"orange")
+							WARNING_COLOR)
 					+ " This story can be shipped with caution.";
 		case FAIL:
 			return "[.lead]" + NEW_LINE
-					+ getIcon(FAILED_STORY, "2x", "horizontal", "red")
+					+ getIcon(FAILED_STORY, "2x", "horizontal", FAILED_COLOR)
 					+ " This story contains errors and should not be shipped.";
 		default:
 			return "";
